@@ -1,7 +1,7 @@
 import os
 import requests
 import zipfile
-import matplotlib.pyplot as plt
+import zipfile
 from PIL import Image
 import numpy as np
 from models.detection.inference import YOLOInference
@@ -35,8 +35,6 @@ def download_and_extract_models(model_urls, output_dir):
             zip_ref.extractall(os.path.join(output_dir, model_name))
         print(f"{model_name} model downloaded and extracted!")
 
-#download_and_extract_models(model_urls, output_dir)
-
 # Define model directories
 MODEL_DIRS = {
     'segmentation': os.path.join(output_dir, 'segmentation'),
@@ -59,42 +57,54 @@ detector = YOLOInference(
 )
 
 
-# Path to the input image
-fish_path = 'image2.png'  # Replace with the path to your image
+# Define input and output folders
+#Change the folders to the corresponding fish
+input_folder = './fish'  # Folder containing the input images
+output_folder = './catfish_masks'  # Folder to save the segmented images
+os.makedirs(output_folder, exist_ok=True)
+try:
+    # Iterate through all images in the input folder
+    for filename in os.listdir(input_folder):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', 'webp')):  # Process image files only
+            fish_path = os.path.join(input_folder, filename)
+            base, ext = os.path.splitext(filename)
 
-# Step 1: Load and prepare the image
-fish_bgr_np = cv2.imread(fish_path)  # Load image as BGR
-visulize_img_bgr = fish_bgr_np.copy()  # Make a copy for visualization
+            new_filename = f"{base}_mask{ext}"
+            if os.path.isfile(os.path.join(output_folder, new_filename)):
+                print("Already in masks, continuing...")
+                continue
+            print(f"Processing {fish_path}...")
+            
+            # Load the image
+            fish_bgr_np = cv2.imread(fish_path)
+            visulize_img_bgr = fish_bgr_np.copy()
 
-# Convert the image to RGB for inference
-visulize_img_rgb = cv2.cvtColor(fish_bgr_np, cv2.COLOR_BGR2RGB)
-visulize_img = copy.deepcopy(visulize_img_rgb)  # Deep copy for visualization
+            # Convert the image to RGB for inference
+            visulize_img_rgb = cv2.cvtColor(fish_bgr_np, cv2.COLOR_BGR2RGB)
+            visulize_img_rgb = np.array(visulize_img_rgb)
+            visulize_img = copy.deepcopy(visulize_img_rgb)
 
-# Step 3: Run object detection
-boxes = detector.predict(visulize_img_rgb)[0]
+            # Run object detection
+            box = detector.predict(visulize_img_rgb)[0][0]
+                
+            cropped_fish_bgr = box.get_mask_BGR()
+            cropped_fish_rgb = box.get_mask_RGB()
+            segmented_polygons = segmentator.predict(cropped_fish_bgr)[0]
 
-# Process each detected fish
-for box in boxes:
-    # Crop the detected fish region (BGR and RGB)
-    cropped_fish_bgr = box.get_mask_BGR()
-    cropped_fish_rgb = box.get_mask_RGB()
+            # Apply segmentation
+            cropped_fish_mask = segmented_polygons.mask_polygon(cropped_fish_rgb)
+            segmented_polygons.move_to(box.x1, box.y1)
+            segmented_polygons.draw_polygon(visulize_img)
+            
+            # Save the segmented image to the output folder
+            output_path = os.path.join(output_folder, new_filename)
+            segmented_bgr = cv2.cvtColor(cropped_fish_mask, cv2.COLOR_RGB2BGR)  # Convert back to BGR for saving
+            
+            cv2.imwrite(output_path, segmented_bgr)
 
-    # Run segmentation on the cropped fish
-    segmented_polygons = segmentator.predict(cropped_fish_bgr)[0]
-
-    # Apply the segmentation mask to the cropped fish
-    cropped_fish_mask = segmented_polygons.mask_polygon(cropped_fish_rgb)
-
-    # Draw segmentation polygons on the original image
-    segmented_polygons.move_to(box.x1, box.y1)  # Adjust polygon position to the full image
-    segmented_polygons.draw_polygon(visulize_img)
+            print(f"Segmented image saved to {output_path}")
+except EOFError:
+    print("Error has occured at: " + filename)
     
-    plt.imshow(cropped_fish_mask)
-    plt.show()
-
-# Step 4: Visualize final result
-plt.figure(figsize=(10, 6))
-plt.imshow(visulize_img)
-plt.title("Fish Detection and Segmentation")
-plt.axis("off")
-plt.show()
+    
+print("Processing complete!")
