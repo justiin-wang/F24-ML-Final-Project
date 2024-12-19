@@ -7,10 +7,10 @@ Total Project Steps:
 3. Run the Data Augment Notebook and change the paths to work accordingly with your folder structure
 4. Run the the FishClassifierResNet Notebook and change the paths to work accordingly with your folder structure
 
-Folder Path Structure
+## Folder Path Structure
 FinalMLProject
-    * all_fish
-        * Bass
+    - all_fish
+        - Bass
             - Mask
             - Premask
         - Bluegill
@@ -25,9 +25,9 @@ FinalMLProject
     - data
         - Bass ... (same 4 fish class as before, not included for brevity)
     - split_data
-        -test
+        - test
             - Bass ...
-        -train
+        - train
             - Bass ...
     - aug_data
         - train
