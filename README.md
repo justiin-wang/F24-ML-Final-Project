@@ -1,6 +1,8 @@
 # F24-ML-Final-Project
 Group: Johnny Pham, Justin Wang, Zijiang Yang
 
+Dataset included in this repo.
+
 Total Project Steps:
 1. Gather Data into a folder with 4 subfolders titled Catfih, Snakehead, Bluegill and Bass (Our code used 100 fish per class)
 2. Run Segmentation of each of the folders with Fish Segmenter RNN and hand segment any failed segmentations
