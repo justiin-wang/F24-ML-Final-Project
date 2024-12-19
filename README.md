@@ -34,7 +34,11 @@ FinalMLProject
             - Bass ...
 
 Fish Segmenter Steps:
-
+*Run pip install -r requirement.txxt to install all the required libraries
+*In the mask_r_cnn.py code, there is a line for an input folder and an output folder (change the path to match those folders)
+*Create an input and an output folder if they do not exist
+*Run the the python file
+*The segmented pictures will be in the output folder
 
 Data Augmenting Steps:
 * Specify Base, Data, Split_data, test and train directory.
