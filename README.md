@@ -9,8 +9,8 @@ Total Project Steps:
 
 Folder Path Structure
 FinalMLProject
-    - all_fish
-        - Bass
+    * all_fish
+        * Bass
             - Mask
             - Premask
         - Bluegill
